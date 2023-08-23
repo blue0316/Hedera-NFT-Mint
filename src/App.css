@@ -1,0 +1,677 @@
+@keyframes move-background {
+  from {
+		-webkit-transform: translate3d(0px, 0px, 0px);
+	}
+	to { 
+		-webkit-transform: translate3d(1000px, 0px, 0px);
+	}
+}
+@-webkit-keyframes move-background {
+  from {
+		-webkit-transform: translate3d(0px, 0px, 0px);
+	}
+	to { 
+		-webkit-transform: translate3d(1000px, 0px, 0px);
+	}
+}
+
+@-moz-keyframes move-background {    
+	from {
+		-webkit-transform: translate3d(0px, 0px, 0px);
+	}
+	to { 
+		-webkit-transform: translate3d(1000px, 0px, 0px);
+	}
+}
+
+    @-webkit-keyframes move-background {
+	from {
+		-webkit-transform: translate3d(0px, 0px, 0px);
+	}
+	to { 
+		-webkit-transform: translate3d(1000px, 0px, 0px);
+	}
+}
+
+.background-container{
+	position: fixed;
+	top: 0;
+	left:0;
+	bottom: 0;
+	right: 0;
+  z-index: 0;
+}
+
+.stars {
+ /* background: black url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png) repeat; */
+ position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: block;
+  	z-index: 0;
+}
+
+.twinkling{
+	width:10000px;
+	height: 100%;
+	/* background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/twinkling.png") repeat; */
+	background-size: 1000px 1000px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    
+    -moz-animation:move-background 70s linear infinite;
+  -ms-animation:move-background 70s linear infinite;
+  -o-animation:move-background 70s linear infinite;
+  -webkit-animation:move-background 70s linear infinite;
+  animation:move-background 70s linear infinite;
+	
+}
+
+.clouds{
+	width:10000px;
+	height: 100%;
+	/* background: transparent url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/clouds_repeat.png") repeat; */
+	background-size: 1000px 1000px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+
+   -moz-animation:move-background 150s linear infinite;
+  -ms-animation:move-background 150s linear infinite;
+  -o-animation:move-background 150s linear infinite;
+  -webkit-animation:move-background 150s linear infinite;
+  animation:move-background 150s linear infinite;
+}
+
+.moon-image {
+  height: 59vh;
+  width:59vh;
+  position: absolute;
+  z-index: 3;
+  right: 20px;
+}
+
+
+@font-face {
+  font-family: "MyFont";
+  font-style: normal;
+  font-weight: normal;
+  src: url("../public/RoboGirls-4BzEB.ttf") format("truetype");
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+  background: black;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #282c34; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #282c34; 
+}
+
+.App {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: black;
+}
+
+
+.header {
+  position: relative;
+  z-index: 10;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header-content .header-left .logo {
+  margin-top: 14px;
+  margin-right: 16px;
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.coin-select-box, .coin-amount-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 80%;
+  margin: auto;
+}
+
+.coin-select-box {
+  margin-top: 10px;
+}
+.coin-amount-box {
+  margin-top: 10px;
+}
+
+.coin-select-box .flip-button {
+  margin: 0px 5px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.coin-amount-box .flip-button {
+  margin: 0px 5px;
+}
+
+.logo-img-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+.logo-img-section img {
+  width: 200px;
+}
+
+.header-content .header-left .logo img {
+  margin-right: 12px;
+}
+
+main {
+  margin-top: 22px;
+  z-index: 5;
+}
+
+.container {
+  position: relative;
+  z-index: 2;  
+  margin: auto;
+  width: 550px;
+
+}
+
+.main-content {
+  padding-top: 0;
+}
+
+.flip-box {
+  justify-content: center;
+  flex-direction: column;
+  width: 87%;
+  margin: auto;
+}
+
+.flip-box .coins {
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.flip-box, .flip-box .coins {
+  display: flex;
+  align-items: center;
+}
+
+.flip-box .coins img {
+  transform: rotate(0deg);
+  width: 150px;
+}
+
+.flip-box .coins:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  background: radial-gradient(50% 50% at 50% 50%,rgba(36,255,0,.23) 0,rgba(250,255,0,0) 100%);
+  margin-top: 40px;
+}
+
+.bet-on-title {
+  font-family: MyFont;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 50px;
+  line-height: 32px;
+  text-shadow: -1.22586px 0 17.4686px rgba(106,255,82,.67);
+  margin-bottom: 8px;
+  margin-top: 8px;
+  color: #83ff49;
+}
+
+.tab-section {
+  display: flex;
+  padding: 8px;
+  justify-content: center;
+  align-items: flex-end;
+  border-radius: 7px;
+  margin: auto;
+  margin-bottom: 10px;
+}
+
+.tab-inner-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  border: 1px solid #83ff49;
+}
+
+.selected-tab {
+  background-color: #83ff49;
+  color: black !important;
+}
+
+.tab-section .tab {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 18px;
+  cursor: pointer;
+  position: relative;
+  font-weight: bold;
+}
+
+.tab1 {
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.tab2 {
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.bet-selecte .coin-box img {
+  width: 100px;
+}
+.bet-selecte .coin-box .flip-button {
+  margin-top: 10px;
+} 
+.flip-button {
+  background-color: #83ff49;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: none;
+  outline: none;
+  border-radius: 2px;
+  font-weight: bold;
+  box-shadow: -1.22586px 0 17.4686px rgba(106,255,82,.67);
+  cursor: pointer;
+  border: solid 2px transparent;
+  color: #282c34;
+}
+.connect-btn-section .flip-button {
+  width: 100%;
+  margin: 0px 5px;
+}
+.box-container {
+  width: 80%;
+  margin: auto;
+  margin-top: 15px;
+}
+
+.box-container .text-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  outline: none;
+  border: 1px solid #83ff49;
+  padding: 10px;
+  border-radius: 20px;
+  color: white;
+  font-size: 16px;
+  box-shadow: -1.22586px 0 10.4686px rgba(106,255,82,.67);
+}
+
+.box-container label {
+  color:  white;
+  font-size: 16px;
+}
+.connect-btn-section .flip-button:hover {
+  background-color: #4aff2c;
+  opacity: 0.8;
+  color: azure;
+}
+
+.coin-box .flip-button:hover, .flip-button.selected {
+  border: aliceblue 2px solid;
+  color: aliceblue;
+  background: transparent;
+}
+
+.or-section p, .choose-text {
+  font-family: MyFont;
+  font-size: 30px;
+  color: #83ff49;
+  margin-bottom: 0px;
+}
+.choose-text p{
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 0px;
+  margin-top: 50px;
+}
+.bet-selecte .coin-box p {
+  font-family: MyFont;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 19px;
+  color: #83ff49;
+}
+
+.flip-box .flip-inner-box {
+  margin-top: 20px;
+  box-shadow: -1.22586px 0 17.4686px rgba(106,255,82,.67);
+  width: 100%;
+  border-radius: 3px;
+  background-color:rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  margin-bottom: 40px;
+}
+.upload__image-wrapper {
+  text-align: center;
+}
+.connect-btn-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  width: 80%;
+}
+
+.text-purple {
+  color: #952cff !important;
+}
+
+.text-green {
+  color: #83ff49 !important;
+}
+
+
+.leaderboard {
+  max-width: 770px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.h2-plays {
+  text-align: center;
+  margin-top: 80px;
+  font-family: MyFont;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 22px;
+  color: #83ff49;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 18px;
+  z-index: 10;
+}
+
+header ul {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  padding: 0px;
+  z-index: 10;
+}
+
+header ul li {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+header ul li a {
+  text-decoration: none;
+  text-transform: uppercase;
+  font-family: MyFont;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 17.0299px;
+  line-height: 19px;
+  color: #4aff2c;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  /* text-shadow: .22586px 0 17.4686px rgba(106,255,82,.67) */
+}
+
+/* .bet-selecte .coin-box:hover:before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: 100px;
+  height: 100px;
+  margin-top: 10px;
+  background: radial-gradient(50% 50% at 50% 50%,rgba(82,255,0,.3) 0,rgba(250,255,0,0) 100%);
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  z-index: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.toolbar {
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* width: 150px; */
+  z-index: 100;
+}
+.toolbar div {
+  padding: 5px 5px;
+  cursor: pointer;
+}
+.toolbar p {
+  margin: 0px;
+  font-size: 10px;
+}
+.toolbar .account-text {
+  font-size: 16px;
+  margin-right: 4px;
+}
+.toolbar .sound-img {
+  width: 40px;
+}
+
+.disconnect-modal {
+  border: 0.5px solid #83ff49 !important;;
+  border-radius: 8px;
+  padding: 20px;
+  z-index: 1000;
+  background-color: rgb(12, 12, 12);
+  position: absolute;
+  right: 18px;
+  top: 82px;
+}
+.disconnect-btn {
+  border-radius: 4.73px;
+  background: transparent;
+  outline: none;
+  border: 1px solid;
+  font-size: 15px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.account-section:hover {
+  opacity: 0.8;
+}
+
+.disconnect-btn:hover {
+  background-color: rgb(50, 50, 50);
+  color: white !important;
+}
+
+footer {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 10;
+}
+
+footer ul {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  padding: 0px;
+  z-index: 10;
+}
+
+footer ul li {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+footer ul li a {
+  text-decoration: none;
+  text-transform: uppercase;
+  font-family: MyFont;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 17.0299px;
+  line-height: 19px;
+  color: #4aff2c;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  /* text-shadow: .22586px 0 17.4686px rgba(106,255,82,.67) */
+}
+
+@media only screen and (max-width: 450px) {
+  .container {
+    width: 100% !important;
+  }
+  .flip-button {
+    padding: 3px 5px;
+    font-size: 11px;
+  }
+  .bet-on-title {
+    font-size: 36px !important;
+  }
+  .coin-select-box, .coin-amount-box {
+    width: 100%;
+  }
+  .connect-btn-section .flip-button {
+    width: 100%;
+    margin: 0px 5px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .container {
+    width: 420px;
+  }
+  .bet-on-title {
+    font-size: 40px;
+  }
+  .flip-button {
+    padding: 3px 5px;
+  }
+  .coin-select-box, .coin-amount-box {
+    width: 90%;
+  }
+  .connect-btn-section .flip-button {
+    width: 100%;
+  }
+  .connect-btn-section {
+    width: 90%;
+  }
+  footer {
+    position: relative;
+    padding: 0px;
+  }
+  .flip-box {
+    width: 95%;
+  } 
+  footer ul li {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+  .choose-text p {
+    font-size: 18px;
+  }
+}
+
+.image-upload {
+  cursor: pointer;
+}
