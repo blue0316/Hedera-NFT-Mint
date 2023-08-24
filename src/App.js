@@ -5,11 +5,18 @@ import { useEffect, useState } from 'react';
 import { pairClient, disconnect } from './hashgraph';
 import BulkTab from './components/BulkTab';
 import SingleTab from './components/SingleTab';
+import soundMusic from './assets/music/Click.mp3';
+import useSound from 'use-sound';
+
 
 function App() {
+  const [playSound] = useSound(soundMusic, { volume: 0.5 });
   const [pairingData, setPairingData] = useState(null);
   const [bulkTab, setBulkTab] = useState(true);
   const [showDisconnect, setShowDisconnect] = useState(false);
+  const [clickPlaying, setClickPlaying] = useState(false);
+
+  const clickPlay = () => { if(clickPlaying==true) playSound(); }
 
   const connectWallet = async () => {
     const data = await pairClient();
@@ -33,6 +40,10 @@ function App() {
       </div>
       <header>
         <div className="toolbar">
+          <div onClick={()=> setClickPlaying(!clickPlaying)}>
+            <img className="sound-img" src={clickPlaying ? "./images/on.png": "./images/off.png"} />
+            <p className="text-green">SOUND</p>
+          </div>
           {pairingData && pairingData.savedPairings && pairingData.savedPairings.length>0 &&
             <div onClick={()=> {setShowDisconnect(!showDisconnect)}} className='account-section'>
               <span className="text-green account-text">{pairingData.savedPairings[0].accountIds[0]}</span>
@@ -59,10 +70,10 @@ function App() {
                 <>
                   <div className="tab-section">
                     <div className="tab-inner-section">
-                      <div className={'tab1 tab ' + (bulkTab==true? "selected-tab":"")} onClick={()=> setBulkTab(true)}>
+                      <div className={'tab1 tab ' + (bulkTab==true? "selected-tab":"")} onClick={()=>(clickPlay(), setBulkTab(true))}>
                         BULK MINTING
                       </div>
-                      <div className={'tab2 tab ' + (bulkTab==false? "selected-tab":"")} onClick={()=> setBulkTab(false)}>
+                      <div className={'tab2 tab ' + (bulkTab==false? "selected-tab":"")} onClick={()=> (clickPlay(), setBulkTab(false))}>
                         SINGLE MINTING
                       </div>
                     </div>
