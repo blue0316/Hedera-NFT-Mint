@@ -10,8 +10,10 @@ import {
 } from '@hashgraph/sdk';
 import coindata from "./constants"
 
+import { apiBaseUrl, NFTCreator, sauceInu, sauceInuFee, network } from "./config/config";
+
 const hashconnect = new HashConnect(true);
-const contractId = ContractId.fromString("0.0.3441264");
+const contractId = ContractId.fromString(NFTCreator);
 let saveData = {
     topic: "",
     pairingString: "",
@@ -25,8 +27,6 @@ const appMetaData = {
     url:""
 }
 
-const apiBaseUrl = "https://mainnet-public.mirrornode.hedera.com/api/v1/";
-
 
 
 export const pairClient = async () => {
@@ -34,7 +34,7 @@ export const pairClient = async () => {
         console.log(pairingData, "PPP")
         saveData.savedPairings.push(pairingData);
     })
-    let initData = await hashconnect.init(appMetaData, "mainnet", false);
+    let initData = await hashconnect.init(appMetaData, network, false);
     saveData = initData;
     if(initData.savedPairings.length === 0) {
         hashconnect.connectToLocalWallet();
@@ -45,21 +45,35 @@ export const pairClient = async () => {
     return saveData
 }
 
-export const getAllowance = async (tokenId, ownerId, spenderId) => {
-    console.log(apiBaseUrl+"accounts/"+ownerId+"/allowances/tokens?limit=10&order=desc&spender.id="+spenderId+"&token.id="+tokenId);
-    const { data } = await axios.get(apiBaseUrl+"accounts/"+ownerId+"/allowances/tokens?limit=10&order=desc&spender.id="+spenderId+"&token.id="+tokenId);
-    console.log(data);
+export const getAllowance = async (ownerId) => {
+    const { data } = await axios.get(apiBaseUrl+"accounts/"+ownerId+"/allowances/tokens?limit=10&order=desc&spender.id="+NFTCreator+"&token.id="+sauceInu);
     if(data&&data.allowances &&data.allowances.length>0) return data.allowances[0].amount_granted;
     else return 0;
 }
+  
+export const createNFT = async (name, symbol, maxSupply) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    const createNFTTx = await new ContractExecuteTransaction()
+                    .setContractId(contractId)
+                    .setGas(100000)
+                    .setFunction("createNft",
+                      new ContractFunctionParameters()
+                      .addString(name)
+                      .addString(symbol)
+                      .addUint32(maxSupply))
+                    .freezeWithSigner(signer);
+    const resu = await createNFTTx.executeWithSigner(signer)
+    console.log(resu, "GGGGGGGGGG")
+}
 
 export const flipToken = async (tokenIndex, amountIndex, option) => {
-    const amount = coindata[tokenIndex].amounts[amountIndex];
-    let provider = hashconnect.getProvider("mainnet", saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     const beforeBal = (await provider.getAccountBalance(signer.getAccountId())).tokens.get(coindata[tokenIndex].address);
     console.log(beforeBal, "beforeBal")
-    const totalAmount = amount*1.025;
+    const totalAmount = sauceInu*1.025;
     let targetTokenId = TokenId.fromString(coindata[tokenIndex].address);
     const tokenAllowance = await getAllowance(targetTokenId.toString(), signer.getAccountId().toString(), contractId.toString());
     if(tokenAllowance<totalAmount) {
@@ -87,7 +101,7 @@ export const flipToken = async (tokenIndex, amountIndex, option) => {
 }
 
 export const flipHBar = async (selectedAmountIndex, selectedOption) => {
-    let provider = hashconnect.getProvider("mainnet", saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     const beforeBal = (await provider.getAccountBalance(signer.getAccountId())).hbars.toBigNumber();
     const amount = coindata[3].amounts[selectedAmountIndex];
@@ -108,7 +122,7 @@ export const flipHBar = async (selectedAmountIndex, selectedOption) => {
 }
 
 export const setAdminWallet = async () => {
-    let provider = hashconnect.getProvider("mainnet", saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     const flipTx = await new ContractExecuteTransaction()
                     .setContractId(contractId)
