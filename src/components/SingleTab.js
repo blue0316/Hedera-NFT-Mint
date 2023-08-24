@@ -51,25 +51,25 @@ function SingleTab() {
     }
     
     const mintNFT = async () => {
-        // if(images.length==0) {
-        //     alert("please select image")
-        //     return;
-        // }
+        if(images.length==0) {
+            alert("please select image")
+            return;
+        }
         if(name==undefined || tokenName==undefined || symbol==undefined) { alert("Please enter required fields"); return; }
-        // const imageData = base64ToArrayBuffer(images[0]["data_url"]);
-        // const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
-        // const nftstorage = new NFTStorage({ token: ipfskey })
-        // const response  = await nftstorage.store({
-        //     image: file,
-        //     type: images[0].file.type,
-        //     name,
-        //     description,
-        //     creator,
-        //     format: 'HIP412@2.0.0',
-        //     attributes,
-        //     properties:{token_name:tokenName, symbol, fee:royaltyAccs}
-        // });
-        //console.log(response)
+        const imageData = base64ToArrayBuffer(images[0]["data_url"]);
+        const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
+        const nftstorage = new NFTStorage({ token: ipfskey })
+        const response  = await nftstorage.store({
+            image: file,
+            type: images[0].file.type,
+            name,
+            description,
+            creator,
+            format: 'HIP412@2.0.0',
+            attributes,
+            properties:{token_name:tokenName, symbol, fee:royaltyAccs}
+        });
+        console.log(response)
 
         await createNFT(tokenName, symbol, 10000)
         //console.log(`https://ipfs.io/ipfs/${ipnft}/metadata.json`)
