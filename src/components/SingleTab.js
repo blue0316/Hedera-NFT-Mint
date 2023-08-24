@@ -1,15 +1,21 @@
 import React from 'react';
 import ImageUploading from 'react-images-uploading';
+import { storeNFT } from '../services/ipfs';
 
 function SingleTab() {
     const [images, setImages] = React.useState([]);
     const maxNumber = 69;
 
     const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
         console.log(imageList, addUpdateIndex);
         setImages(imageList);
     };
+
+    const mintNFT = async () => {
+        const file = new File([images[0]["data_url"]], "nft.jpg", { type: "image/jpeg" });
+        const result = await storeNFT(file, "AAA", "BBB");
+    }
+
     return (
         <>
             <ImageUploading
@@ -63,7 +69,7 @@ function SingleTab() {
                 <label > Add a FREEZE Key</label>
             </div>
             <div className='box-container'>
-                <button className="flip-button" tabIndex="0" style={{width:"100%"}}>
+                <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
                     CREATE & MINT
                 </button>
             </div>
