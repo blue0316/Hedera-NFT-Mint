@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import ImageUploading from 'react-images-uploading';
-import axios from 'axios';
-//import { storeNFT } from '../services/ipfs';
-import { base64ToArrayBuffer, getAllowance } from '../services/helpers';
+import { base64ToArrayBuffer } from '../services/helpers';
 import { NFTStorage, File } from 'nft.storage'
 import { ipfskey } from '../config/config';
-import { createNFT } from '../hashgraph';
+import { createNFT, approveSauceInu, getTokenAddress } from '../hashgraph';
+import { TokenId } from '@hashgraph/sdk';
 
 function SingleTab() {
     const [images, setImages] = useState([]);
@@ -13,6 +12,7 @@ function SingleTab() {
     const [description, setDescription] = useState(undefined);
     const [creator, setCreator] = useState(undefined);
     const [quantity, setQuantity] = useState(undefined);
+    const [maxSupply, setMaxSupply] = useState(undefined);
     const [tokenName, setTokenName] = useState(undefined);
     const [symbol, setSymbol] = useState(undefined);
     const [fallbackFee, setFallbackFee] = useState(undefined);
@@ -51,27 +51,33 @@ function SingleTab() {
     }
     
     const mintNFT = async () => {
-        if(images.length==0) {
-            alert("please select image")
-            return;
+        if(images.length==0) { alert("please select image"); return; }
+        if(name==undefined || tokenName==undefined || symbol==undefined || maxSupply==undefined) { alert("Please enter required fields"); return; }
+        try {
+            setMinting(true);
+            const imageData = base64ToArrayBuffer(images[0]["data_url"]);
+            const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
+            const nftstorage = new NFTStorage({ token: ipfskey })
+            const response  = await nftstorage.store({
+                image: file,
+                type: images[0].file.type,
+                name,
+                description,
+                creator,
+                format: 'HIP412@2.0.0',
+                attributes,
+                properties:{token_name:tokenName, symbol, fee:royaltyAccs}
+            });
+            const txResult = await createNFT(tokenName, symbol, maxSupply);
+            console.log(txResult, "RESULT");
+            await approveSauceInu(quantity);
+            const { call_result } = await getTokenAddress(txResult.transactionId);
+            const tokenAddr = TokenId.fromSolidityAddress(call_result);
+            console.log(tokenAddr, "tokenADDR")
+        } catch (error) {
+            
         }
-        if(name==undefined || tokenName==undefined || symbol==undefined) { alert("Please enter required fields"); return; }
-        const imageData = base64ToArrayBuffer(images[0]["data_url"]);
-        const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
-        const nftstorage = new NFTStorage({ token: ipfskey })
-        const response  = await nftstorage.store({
-            image: file,
-            type: images[0].file.type,
-            name,
-            description,
-            creator,
-            format: 'HIP412@2.0.0',
-            attributes,
-            properties:{token_name:tokenName, symbol, fee:royaltyAccs}
-        });
-        console.log(response)
 
-        await createNFT(tokenName, symbol, 10000)
         //console.log(`https://ipfs.io/ipfs/${ipnft}/metadata.json`)
     }
 
@@ -95,22 +101,25 @@ function SingleTab() {
                 )}
             </ImageUploading>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Name (required)' onChange={(e) => setName(e.target.value)} value={name} />
+                <input className='text-input' type='text' placeholder='Collection Name (required)' onChange={(e) => setTokenName(e.target.value)} value={tokenName}/>
             </div>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Description' onChange={(e) => setDescription(e.target.value)} value={description} />
+                <input className='text-input' type='text' placeholder='Collection Symbol (required)' onChange={(e) => setSymbol(e.target.value)} value={symbol}/>
             </div>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Creator' onChange={(e) => setCreator(e.target.value)} value={creator} />
+                <input className='text-input' type='number' placeholder='Max Supply (required)' onChange={(e) => setMaxSupply(e.target.value)} value={maxSupply}/>
             </div>
             <div className='box-container'>
-                <input className='text-input' type='number' placeholder='Quantity' onChange={(e) => setQuantity(e.target.value)} value={quantity}/>
+                <input className='text-input' type='text' placeholder='NFT Name (required)' onChange={(e) => setName(e.target.value)} value={name} />
             </div>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Token Name (required)' onChange={(e) => setTokenName(e.target.value)} value={tokenName}/>
+                <textarea className='text-input' type='text' placeholder='NFT Description' onChange={(e) => setDescription(e.target.value)} value={description} rows={3} />
             </div>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Token Symbol (required)' onChange={(e) => setSymbol(e.target.value)} value={symbol}/>
+                <input className='text-input' type='text' placeholder='Creator (required)' onChange={(e) => setCreator(e.target.value)} value={creator} />
+            </div>
+            <div className='box-container'>
+                <input className='text-input' type='number' placeholder='Quantity (required)' onChange={(e) => setQuantity(e.target.value)} value={quantity}/>
             </div>
             <div className='box-container'>
                 <input className='text-input' type='text' placeholder='Fallback Fee' onChange={(e) => setFallbackFee(e.target.value)} value={fallbackFee}/>
@@ -162,9 +171,12 @@ function SingleTab() {
                 <label > Add a FREEZE Key</label>
             </div>
             <div className='box-container'>
-                <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
+                {!minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
                     CREATE & MINT
-                </button>
+                </button>}
+                {minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
+                    NFT Creating ...
+                </button>}
             </div>
         </>
     );

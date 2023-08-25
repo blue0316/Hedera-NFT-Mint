@@ -6,7 +6,7 @@ import {
     ContractExecuteTransaction,
     ContractFunctionParameters,
     ContractId,
-    TokenId
+    TokenId,
 } from '@hashgraph/sdk';
 import coindata from "./constants"
 
@@ -50,21 +50,79 @@ export const getAllowance = async (ownerId) => {
     if(data&&data.allowances &&data.allowances.length>0) return data.allowances[0].amount_granted;
     else return 0;
 }
+
+export const approveSauceInu = async (qty) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    const balance = (await provider.getAccountBalance(signer.getAccountId())).tokens.get(sauceInu);
+    const tokenAllowance = await getAllowance(saveData.savedPairings[0].accountIds[0]);
+    const amount = qty*sauceInuFee;
+    if(balance<amount) return false;
+    else if(tokenAllowance<amount) {
+        const allowanceTx = new AccountAllowanceApproveTransaction()
+            .approveTokenAllowance(TokenId.fromString(sauceInu), signer.getAccountId(), AccountId.fromString(contractId.toString()), 10000000000*10**7)
+            .freezeWithSigner(signer);
+        const allowanceSign = await (await allowanceTx).signWithSigner(signer);
+        const allowanceSubmit = await allowanceSign.executeWithSigner(signer);
+        if(allowanceSubmit) return true;
+        else return false;
+    }
+    return true;
+}
   
 export const createNFT = async (name, symbol, maxSupply) => {
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
-    const createNFTTx = await new ContractExecuteTransaction()
+    try {
+        const createNFTTx = await new ContractExecuteTransaction()
                     .setContractId(contractId)
-                    .setGas(100000)
+                    .setGas(1000000)
+                    .setPayableAmount(20)
                     .setFunction("createNft",
                       new ContractFunctionParameters()
                       .addString(name)
                       .addString(symbol)
-                      .addUint32(maxSupply))
+                      .addString("")
+                      .addInt64(maxSupply)
+                      .addInt64(7000000))
                     .freezeWithSigner(signer);
-    const resu = await createNFTTx.executeWithSigner(signer)
-    console.log(resu, "GGGGGGGGGG")
+        const result = await createNFTTx.executeWithSigner(signer);
+        return result;
+    } catch (error) {
+        console.log(error, "error")
+    }
+}
+
+export const getTokenAddress = async (txHash) => {
+        const arr = txHash.split("@");
+        const secPart = arr[1].split(".");
+        const formattedStr = arr[0]+"-"+secPart[0]+"-"+secPart[1];
+        const { data } = await axios.get(apiBaseUrl+"contracts/results/"+formattedStr);
+        return data;
+}
+
+export const mintNFT = async (name, symbol, maxSupply) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    try {
+        const createNFTTx = await new ContractExecuteTransaction()
+                    .setContractId(contractId)
+                    .setGas(1000000)
+                    .setPayableAmount(20)
+                    .setFunction("createNft",
+                      new ContractFunctionParameters()
+                      .addString(name)
+                      .addString(symbol)
+                      .addString("")
+                      .addInt64(maxSupply)
+                      .addInt64(7000000))
+                    .freezeWithSigner(signer);
+        const result = await createNFTTx.executeWithSigner(signer);
+    } catch (error) {
+        console.log(error, "error")
+    }
+    
+    
 }
 
 export const flipToken = async (tokenIndex, amountIndex, option) => {
