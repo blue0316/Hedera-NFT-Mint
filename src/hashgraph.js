@@ -1,6 +1,7 @@
 import { HashConnect } from "hashconnect";
 import axios from "axios";
 import {
+    TokenAssociateTransaction,
     AccountAllowanceApproveTransaction,
     AccountId,
     ContractExecuteTransaction,
@@ -93,23 +94,23 @@ export const createNFT = async (name, symbol, maxSupply) => {
     }
 }
 
-export const createNFT1 = async (address) => {
+export const associateToken = async (tokenId) => {
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     try {
-        const createNFTTx = await new ContractExecuteTransaction()
-                    .setContractId(contractId)
-                    .setGas(1000000)
-                    .setPayableAmount(20)
-                    .setFunction("createNonFungibleTokenPublic",
-                      new ContractFunctionParameters()
-                      .addAddress(address))
-                    .freezeWithSigner(signer);
-        const result = await createNFTTx.executeWithSigner(signer);
-        return result;
+        const transaction = await new TokenAssociateTransaction()
+        .setAccountId(saveData.savedPairings[0].accountIds[0])
+        .setTokenIds([tokenId])
+        .freezeWithSigner(signer);
+
+        const signTx = await transaction.signWithSigner(signer);
+        //Build the unsigned transaction, sign with the private key of the account that is being associated to a token, submit the transaction to a Hedera network
+        const transactionId = await signTx.executeWithSigner(signer);
+        return transactionId;
     } catch (error) {
-        console.log(error, "error")
+        console.log(error, "STEPPPP")
     }
+    
 }
 
 export const getTokenAddress = async (txHash) => {
@@ -139,8 +140,26 @@ export const mintNFT = async (tokenAddr, qty, metadata) => {
     } catch (error) {
         console.log(error, "error")
     }
-    
-    
+}
+
+export const transferNFT = async (tokenAddr, receiver, serial) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    try {
+        const transferNFTTx = await new ContractExecuteTransaction()
+                    .setContractId(contractId)
+                    .setGas(1000000)
+                    .setFunction("transferNft",
+                      new ContractFunctionParameters()
+                      .addAddress(tokenAddr)
+                      .addAddress(receiver)
+                      .addInt64(serial))
+                    .freezeWithSigner(signer);
+        const result = await transferNFTTx.executeWithSigner(signer);
+        return result;
+    } catch (error) {
+        console.log(error, "error")
+    }
 }
 
 export const flipToken = async (tokenIndex, amountIndex, option) => {

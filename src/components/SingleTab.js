@@ -3,8 +3,8 @@ import ImageUploading from 'react-images-uploading';
 import { sleep, base64ToArrayBuffer } from '../services/helpers';
 import { NFTStorage, File } from 'nft.storage'
 import { ipfskey } from '../config/config';
-import { createNFT, createNFT1, approveSauceInu, getTokenAddress, mintNFT } from '../hashgraph';
-import { TokenId } from '@hashgraph/sdk';
+import { createNFT, createNFT1, approveSauceInu, getTokenAddress, mintNFT, transferNFT, associateToken } from '../hashgraph';
+import { AccountId, TokenId } from '@hashgraph/sdk';
 
 function SingleTab({pairingData}) {
     console.log(pairingData, "pairingData");
@@ -57,53 +57,47 @@ function SingleTab({pairingData}) {
     }
     
     const mintNFTFunc = async () => {
-        
-        try {
-            const txResult = await createNFT1(TokenId.fromString("0.0.451770").toSolidityAddress());
-            console.log(txResult, "STEP2- finished creating NFT");
-            
-        } catch (error) {
-            console.log(error)
-        }
-        
-        
-        
-        /*if(images.length==0) { alert("please select image"); return; }
+        if(images.length==0) { alert("please select image"); return; }
         if(tokenName==undefined || symbol==undefined || maxSupply==undefined) { alert("Please enter required fields"); return; }
         try {
             //setMinting(true);
             
-            // const imageData = base64ToArrayBuffer(images[0]["data_url"]);
-            // const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
-            // const nftstorage = new NFTStorage({ token: ipfskey })
-            // const { ipnft }  = await nftstorage.store({
-            //     image: file,
-            //     type: images[0].file.type,
-            //     name: tokenName,
-            //     description,
-            //     creator,
-            //     format: 'none',
-            //     attributes:[],
-            //     properties:{fee:royaltyAccs}
-            // });
-            // const metadata = `ipfs://${ipnft}/metadata.json`;
-            // console.log(metadata, "STEP1- finished uploading metadata");
+            const imageData = base64ToArrayBuffer(images[0]["data_url"]);
+            const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
+            const nftstorage = new NFTStorage({ token: ipfskey })
+            const { ipnft }  = await nftstorage.store({
+                image: file,
+                type: images[0].file.type,
+                name: tokenName,
+                description,
+                creator,
+                format: 'none',
+                attributes:[],
+                properties:{fee:royaltyAccs}
+            });
+            const metadata = `ipfs://${ipnft}`;
+            console.log(metadata, "STEP1- finished uploading metadata");
             const txResult = await createNFT(tokenName, symbol, maxSupply);
             console.log(txResult, "STEP2- finished creating NFT");
             await approveSauceInu(quantity);
             await sleep(3000);
             const { call_result } = await getTokenAddress(txResult.transactionId);
-            const tokenAddr = TokenId.fromSolidityAddress("0x"+call_result.substring(call_result.length-40));
-            console.log("0x"+call_result.substring(call_result.length-40), tokenAddr.toString(), "STEP3- finished getting created token address")
-            
-            const mintResult = await mintNFT("0x0000000000000000000000000000000000105d98", quantity, "ipfs://bafyreiezjhalfnxw4lqamnf3drq5ppxwxwgkveicn4tyimjnozpthoiy2q")
+            const solidityAddr = "0x"+call_result.substring(call_result.length-40);
+            const tokenAddr = TokenId.fromSolidityAddress(solidityAddr);
+            console.log(solidityAddr, tokenAddr.toString(), "STEP3- finished getting created token address")
+            const mintResult = await mintNFT(solidityAddr, 0, metadata) // need to update quantity
             console.log(mintResult, "STEP4- minting result");
+            
+            const asstx = await associateToken(tokenAddr);
+
+            console.log(asstx, "STEP5- associate token")
+
+            const transferResult = await transferNFT(solidityAddr, AccountId.fromString(creator).toSolidityAddress(), 1)
+            console.log(transferResult, "STEP6- transfer result");
+
         } catch (error) {
             console.log(error)
         }
-
-        //console.log(`https://ipfs.io/ipfs/${ipnft}/metadata.json`)
-        */
     }
 
     return (
