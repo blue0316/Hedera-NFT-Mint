@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ImageUploading from 'react-images-uploading';
-import { base64ToArrayBuffer } from '../services/helpers';
+import { sleep, base64ToArrayBuffer } from '../services/helpers';
 import { NFTStorage, File } from 'nft.storage'
 import { ipfskey } from '../config/config';
-import { createNFT, approveSauceInu, getTokenAddress } from '../hashgraph';
+import { createNFT, createNFT1, approveSauceInu, getTokenAddress, mintNFT } from '../hashgraph';
 import { TokenId } from '@hashgraph/sdk';
 
-function SingleTab() {
+function SingleTab({pairingData}) {
+    console.log(pairingData, "pairingData");
     const [images, setImages] = useState([]);
-    const [name, setName] = useState(undefined);
     const [description, setDescription] = useState(undefined);
     const [creator, setCreator] = useState(undefined);
     const [quantity, setQuantity] = useState(undefined);
@@ -22,6 +22,12 @@ function SingleTab() {
     const [attributes, setAttributes] = useState([]);
     const [minting, setMinting] = useState(false);
 
+    useEffect(() => {
+        if(pairingData) {
+            setCreator(pairingData?.savedPairings[0]?.accountIds[0])
+        }
+    }, [pairingData])
+    
     const onChange = (imageList) => {
         setImages(imageList);
     };
@@ -50,35 +56,54 @@ function SingleTab() {
         setRoyaltyAccs(newValues);
     }
     
-    const mintNFT = async () => {
-        if(images.length==0) { alert("please select image"); return; }
-        if(name==undefined || tokenName==undefined || symbol==undefined || maxSupply==undefined) { alert("Please enter required fields"); return; }
+    const mintNFTFunc = async () => {
+        
         try {
-            setMinting(true);
-            const imageData = base64ToArrayBuffer(images[0]["data_url"]);
-            const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
-            const nftstorage = new NFTStorage({ token: ipfskey })
-            const response  = await nftstorage.store({
-                image: file,
-                type: images[0].file.type,
-                name,
-                description,
-                creator,
-                format: 'HIP412@2.0.0',
-                attributes,
-                properties:{token_name:tokenName, symbol, fee:royaltyAccs}
-            });
-            const txResult = await createNFT(tokenName, symbol, maxSupply);
-            console.log(txResult, "RESULT");
-            await approveSauceInu(quantity);
-            const { call_result } = await getTokenAddress(txResult.transactionId);
-            const tokenAddr = TokenId.fromSolidityAddress(call_result);
-            console.log(tokenAddr, "tokenADDR")
-        } catch (error) {
+            const txResult = await createNFT1(TokenId.fromString("0.0.451770").toSolidityAddress());
+            console.log(txResult, "STEP2- finished creating NFT");
             
+        } catch (error) {
+            console.log(error)
+        }
+        
+        
+        
+        /*if(images.length==0) { alert("please select image"); return; }
+        if(tokenName==undefined || symbol==undefined || maxSupply==undefined) { alert("Please enter required fields"); return; }
+        try {
+            //setMinting(true);
+            
+            // const imageData = base64ToArrayBuffer(images[0]["data_url"]);
+            // const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
+            // const nftstorage = new NFTStorage({ token: ipfskey })
+            // const { ipnft }  = await nftstorage.store({
+            //     image: file,
+            //     type: images[0].file.type,
+            //     name: tokenName,
+            //     description,
+            //     creator,
+            //     format: 'none',
+            //     attributes:[],
+            //     properties:{fee:royaltyAccs}
+            // });
+            // const metadata = `ipfs://${ipnft}/metadata.json`;
+            // console.log(metadata, "STEP1- finished uploading metadata");
+            const txResult = await createNFT(tokenName, symbol, maxSupply);
+            console.log(txResult, "STEP2- finished creating NFT");
+            await approveSauceInu(quantity);
+            await sleep(3000);
+            const { call_result } = await getTokenAddress(txResult.transactionId);
+            const tokenAddr = TokenId.fromSolidityAddress("0x"+call_result.substring(call_result.length-40));
+            console.log("0x"+call_result.substring(call_result.length-40), tokenAddr.toString(), "STEP3- finished getting created token address")
+            
+            const mintResult = await mintNFT("0x0000000000000000000000000000000000105d98", quantity, "ipfs://bafyreiezjhalfnxw4lqamnf3drq5ppxwxwgkveicn4tyimjnozpthoiy2q")
+            console.log(mintResult, "STEP4- minting result");
+        } catch (error) {
+            console.log(error)
         }
 
         //console.log(`https://ipfs.io/ipfs/${ipnft}/metadata.json`)
+        */
     }
 
     return (
@@ -101,16 +126,13 @@ function SingleTab() {
                 )}
             </ImageUploading>
             <div className='box-container'>
-                <input className='text-input' type='text' placeholder='Collection Name (required)' onChange={(e) => setTokenName(e.target.value)} value={tokenName}/>
+                <input className='text-input' type='text' placeholder='Name (required)' onChange={(e) => setTokenName(e.target.value)} value={tokenName}/>
             </div>
             <div className='box-container'>
                 <input className='text-input' type='text' placeholder='Collection Symbol (required)' onChange={(e) => setSymbol(e.target.value)} value={symbol}/>
             </div>
             <div className='box-container'>
                 <input className='text-input' type='number' placeholder='Max Supply (required)' onChange={(e) => setMaxSupply(e.target.value)} value={maxSupply}/>
-            </div>
-            <div className='box-container'>
-                <input className='text-input' type='text' placeholder='NFT Name (required)' onChange={(e) => setName(e.target.value)} value={name} />
             </div>
             <div className='box-container'>
                 <textarea className='text-input' type='text' placeholder='NFT Description' onChange={(e) => setDescription(e.target.value)} value={description} rows={3} />
@@ -159,23 +181,22 @@ function SingleTab() {
                         onChange={(e)=>updateAttributes(index, "value", e.target.value)}
                     />
                 </div>
-            </>
-                )
+            </>)
             )}
-            <div className='box-container'>
+            {/* <div className='box-container'>
                 <input className='' type='checkbox'/>
                 <label > Add a ADMIN Key</label>
             </div>
             <div className='box-container'>
                 <input className='' type='checkbox'/>
                 <label > Add a FREEZE Key</label>
-            </div>
+            </div> */}
             <div className='box-container'>
-                {!minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
+                {!minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFTFunc}>
                     CREATE & MINT
                 </button>}
-                {minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} onClick={mintNFT}>
-                    NFT Creating ...
+                {minting && <button className="flip-button" tabIndex="0" style={{width:"100%"}} >
+                    CREATING NFT ...
                 </button>}
             </div>
         </>

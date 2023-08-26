@@ -1,7 +1,3 @@
-import axios from "axios";
-import { ContractExecuteTransaction } from "@hashgraph/sdk";
-import { NFTCreator, sauceInu, apiBaseUrl } from "../config/config";
-
 export const base64ToArrayBuffer = (base64) => {
     const cleanBase64String = base64.replace(/^data:image\/[a-z]+;base64,/, "");
     const binaryString = atob(cleanBase64String);
@@ -16,3 +12,6 @@ export const base64ToArrayBuffer = (base64) => {
 }
 
 
+export const sleep = async (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

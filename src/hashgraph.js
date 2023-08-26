@@ -93,15 +93,7 @@ export const createNFT = async (name, symbol, maxSupply) => {
     }
 }
 
-export const getTokenAddress = async (txHash) => {
-        const arr = txHash.split("@");
-        const secPart = arr[1].split(".");
-        const formattedStr = arr[0]+"-"+secPart[0]+"-"+secPart[1];
-        const { data } = await axios.get(apiBaseUrl+"contracts/results/"+formattedStr);
-        return data;
-}
-
-export const mintNFT = async (name, symbol, maxSupply) => {
+export const createNFT1 = async (address) => {
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     try {
@@ -109,15 +101,41 @@ export const mintNFT = async (name, symbol, maxSupply) => {
                     .setContractId(contractId)
                     .setGas(1000000)
                     .setPayableAmount(20)
-                    .setFunction("createNft",
+                    .setFunction("createNonFungibleTokenPublic",
                       new ContractFunctionParameters()
-                      .addString(name)
-                      .addString(symbol)
-                      .addString("")
-                      .addInt64(maxSupply)
-                      .addInt64(7000000))
+                      .addAddress(address))
                     .freezeWithSigner(signer);
         const result = await createNFTTx.executeWithSigner(signer);
+        return result;
+    } catch (error) {
+        console.log(error, "error")
+    }
+}
+
+export const getTokenAddress = async (txHash) => {
+        const arr = txHash.split("@");
+        const secPart = arr[1].split(".");
+        const formattedStr = arr[0]+"-"+secPart[0]+"-"+secPart[1];
+        console.log(formattedStr, "fomartedSTR");
+        const { data } = await axios.get(apiBaseUrl+"contracts/results/"+formattedStr);
+        return data;
+}
+
+export const mintNFT = async (tokenAddr, qty, metadata) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    try {
+        const mintNFTTx = await new ContractExecuteTransaction()
+                    .setContractId(contractId)
+                    .setGas(1000000)
+                    .setFunction("mintNft",
+                      new ContractFunctionParameters()
+                      .addAddress(tokenAddr)
+                      .addInt64(qty)
+                      .addBytesArray([Buffer.from(metadata)]))
+                    .freezeWithSigner(signer);
+        const result = await mintNFTTx.executeWithSigner(signer);
+        return result;
     } catch (error) {
         console.log(error, "error")
     }
