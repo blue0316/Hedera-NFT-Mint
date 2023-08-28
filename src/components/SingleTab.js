@@ -78,6 +78,7 @@ function SingleTab({pairingData}) {
             const { call_result } = await getTokenAddress(txResult.transactionId);
             const solidityAddr = "0x"+call_result.substring(call_result.length-40);
             const token = TokenId.fromSolidityAddress(solidityAddr);
+            console.log(token.toSolidityAddress());
             setCreatedToken(token);
             setStep(2);
         } catch (error) {
@@ -89,7 +90,7 @@ function SingleTab({pairingData}) {
         try {
             if(step==0) {
                 await createNFTFunc();
-                console.log(createdToken.toSolidityAddress().toString());
+                //console.log(createdToken.toSolidityAddress().toString());
             } else if(step==2) {
                 setStep(3);
                 setErrorMsg("");
