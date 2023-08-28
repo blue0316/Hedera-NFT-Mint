@@ -76,9 +76,9 @@ function SingleTab({pairingData}) {
             const txResult = await createNFT(tokenName, symbol, maxSupply);
             await sleep(6000);
             const { call_result } = await getTokenAddress(txResult.transactionId);
-            const solidityAddr = "0x"+call_result.substring(call_result.length-40);
-            const token = TokenId.fromSolidityAddress(solidityAddr);
-            console.log(token.toSolidityAddress());
+            console.log("0x"+call_result.substring(call_result.length-40))
+            const token = TokenId.fromSolidityAddress("0x"+call_result.substring(call_result.length-40));
+            
             setCreatedToken(token);
             setStep(2);
         } catch (error) {
