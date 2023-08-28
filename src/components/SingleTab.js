@@ -74,7 +74,7 @@ function SingleTab({pairingData}) {
                 properties:{fee:royaltyAccs}
             });
             const txResult = await createNFT(tokenName, symbol, maxSupply);
-            await sleep(4000);
+            await sleep(6000);
             const { call_result } = await getTokenAddress(txResult.transactionId);
             const solidityAddr = "0x"+call_result.substring(call_result.length-40);
             const token = TokenId.fromSolidityAddress(solidityAddr);
