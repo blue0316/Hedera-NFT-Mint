@@ -124,7 +124,7 @@
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #282c34; 
+  background: #282c34;
 }
 
 .App {
@@ -674,4 +674,24 @@ footer ul li a {
 
 .image-upload {
   cursor: pointer;
+}
+.error-message {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  color: red;
+}
+
+.loading-spinner {
+  position: absolute;
+  display: flex;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40px,-40px);
+}
+
+.text-input:disabled {
+  color: gray;
 }

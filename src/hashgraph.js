@@ -52,6 +52,15 @@ export const getAllowance = async (ownerId) => {
     else return 0;
 }
 
+export const shouldApprove = async (qty) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    const tokenAllowance = await getAllowance(saveData.savedPairings[0].accountIds[0]);
+    const amount = qty*sauceInuFee;
+    if(tokenAllowance<amount) return true;
+    return false;
+}
+
 export const approveSauceInu = async (qty) => {
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
@@ -99,12 +108,10 @@ export const associateToken = async (tokenId) => {
     let signer = hashconnect.getSigner(provider);
     try {
         const transaction = await new TokenAssociateTransaction()
-        .setAccountId(saveData.savedPairings[0].accountIds[0])
-        .setTokenIds([tokenId])
-        .freezeWithSigner(signer);
-
+            .setAccountId(saveData.savedPairings[0].accountIds[0])
+            .setTokenIds([tokenId])
+            .freezeWithSigner(signer);
         const signTx = await transaction.signWithSigner(signer);
-        //Build the unsigned transaction, sign with the private key of the account that is being associated to a token, submit the transaction to a Hedera network
         const transactionId = await signTx.executeWithSigner(signer);
         return transactionId;
     } catch (error) {
@@ -117,18 +124,18 @@ export const getTokenAddress = async (txHash) => {
         const arr = txHash.split("@");
         const secPart = arr[1].split(".");
         const formattedStr = arr[0]+"-"+secPart[0]+"-"+secPart[1];
-        console.log(formattedStr, "fomartedSTR");
         const { data } = await axios.get(apiBaseUrl+"contracts/results/"+formattedStr);
         return data;
 }
 
 export const mintNFT = async (tokenAddr, qty, metadata) => {
+    console.log(tokenAddr, qty, metadata);
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     try {
         const mintNFTTx = await new ContractExecuteTransaction()
                     .setContractId(contractId)
-                    .setGas(1000000)
+                    .setGas(10000000)
                     .setFunction("mintNft",
                       new ContractFunctionParameters()
                       .addAddress(tokenAddr)
@@ -160,60 +167,6 @@ export const transferNFT = async (tokenAddr, receiver, serial) => {
     } catch (error) {
         console.log(error, "error")
     }
-}
-
-export const flipToken = async (tokenIndex, amountIndex, option) => {
-    
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
-    const beforeBal = (await provider.getAccountBalance(signer.getAccountId())).tokens.get(coindata[tokenIndex].address);
-    console.log(beforeBal, "beforeBal")
-    const totalAmount = sauceInu*1.025;
-    let targetTokenId = TokenId.fromString(coindata[tokenIndex].address);
-    const tokenAllowance = await getAllowance(targetTokenId.toString(), signer.getAccountId().toString(), contractId.toString());
-    if(tokenAllowance<totalAmount) {
-        const allowanceTx = new AccountAllowanceApproveTransaction()
-            .approveTokenAllowance(targetTokenId, signer.getAccountId(), AccountId.fromString(contractId.toString()), coindata[tokenIndex].maxSupply)
-            .freezeWithSigner(signer);
-        const allowanceSign = await (await allowanceTx).signWithSigner(signer);
-        const allowanceSubmit = await allowanceSign.executeWithSigner(signer);
-    }
-
-    const flipTx = await new ContractExecuteTransaction()
-                    .setContractId(contractId)
-                    .setGas(100000)
-                    .setFunction("flip",
-                      new ContractFunctionParameters()
-                      .addBool(option)
-                      .addUint256(tokenIndex)
-                      .addUint256(amountIndex))
-                    .freezeWithSigner(signer);
-    await flipTx.executeWithSigner(signer)
-    const afterBalBal = (await provider.getAccountBalance(signer.getAccountId())).tokens.get(coindata[tokenIndex].address);
-    console.log(afterBalBal, "beforeBal");
-    console.log(afterBalBal.compare(beforeBal), "beforeBal")
-    return afterBalBal.compare(beforeBal) == 1;
-}
-
-export const flipHBar = async (selectedAmountIndex, selectedOption) => {
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
-    const beforeBal = (await provider.getAccountBalance(signer.getAccountId())).hbars.toBigNumber();
-    const amount = coindata[3].amounts[selectedAmountIndex];
-    const totalAmount = amount*1.025;
-    if(saveData.savedPairings.length==0) return;
-    const flipTx = await new ContractExecuteTransaction()
-                    .setContractId(contractId)
-                    .setGas(100000)
-                    .setPayableAmount(totalAmount)
-                    .setFunction("flipForHBar",
-                      new ContractFunctionParameters()
-                      .addBool(selectedOption)
-                      .addUint256(selectedAmountIndex))
-                    .freezeWithSigner(signer);
-    await flipTx.executeWithSigner(signer)
-    const afterBal = (await provider.getAccountBalance(signer.getAccountId())).hbars.toBigNumber();
-    return afterBal.comparedTo(beforeBal) == 1;
 }
 
 export const setAdminWallet = async () => {

@@ -13,6 +13,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-images-uploading": "^3.1.7",
+    "react-loader-spinner": "^5.4.5",
     "react-scripts": "5.0.1",
     "react-tabs": "^6.0.2",
     "use-sound": "^4.0.1",
