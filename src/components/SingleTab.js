@@ -4,7 +4,7 @@ import { sleep, base64ToArrayBuffer } from '../services/helpers';
 import { NFTStorage, File } from 'nft.storage'
 import { ipfskey } from '../config/config';
 import { createNFT, approveSauceInu, getTokenAddress, mintNFT, transferNFT, associateToken, shouldApprove } from '../hashgraph';
-import { AccountId, TokenId } from '@hashgraph/sdk';
+import { TokenId } from '@hashgraph/sdk';
 import { Oval } from  'react-loader-spinner'
 
 
@@ -57,6 +57,7 @@ function SingleTab({pairingData}) {
     const createNFTFunc = async () => {
         if(images.length==0) { setErrorMsg("please select image"); return; }
         if(tokenName==undefined || symbol==undefined || maxSupply==undefined) { setErrorMsg("Please enter required fields"); return; }
+        if(maxSupply<quantity) { setErrorMsg("Quentity exceeded the max supply"); return;}
         try {
             setStep(1);
             setErrorMsg("");
@@ -78,10 +79,11 @@ function SingleTab({pairingData}) {
             const { call_result } = await getTokenAddress(txResult.transactionId);
             console.log("0x"+call_result.substring(call_result.length-40))
             const token = TokenId.fromSolidityAddress("0x"+call_result.substring(call_result.length-40));
-            
+            setMetadata(url);
             setCreatedToken(token);
             setStep(2);
         } catch (error) {
+            setStep(0);
             setErrorMsg(error.message);
         }
     }
@@ -89,7 +91,7 @@ function SingleTab({pairingData}) {
     const proceed = async () => {
         try {
             if(step==0) {
-                await createNFTFunc();
+                const createNFTTx = await createNFTFunc();
                 //console.log(createdToken.toSolidityAddress().toString());
             } else if(step==2) {
                 setStep(3);
@@ -110,6 +112,7 @@ function SingleTab({pairingData}) {
             } 
         } catch (error) {
             setErrorMsg(error.message);
+            setStep(0);
         }
     }
 
