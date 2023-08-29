@@ -13,10 +13,14 @@ import {
     Hbar,
     TokenCreateTransaction,
     TokenType,
-    TokenSupplyType
+    TokenSupplyType,
+    PublicKey,
+    Client,
+    Key,
+    PrivateKey,
+    TokenUpdateTransaction,
+    ContractInfoQuery
 } from '@hashgraph/sdk';
-import coindata from "./constants"
-
 import { apiBaseUrl, NFTCreator, sauceInu, sauceInuFee, network } from "./config/config";
 
 const hashconnect = new HashConnect(true);
@@ -34,7 +38,10 @@ const appMetaData = {
     url:""
 }
 
-
+const getAccountInfo = async (account_id) => {
+    const {data} = await axios.get(apiBaseUrl+"accounts/"+account_id);
+    return data;
+}
 
 export const pairClient = async () => {
     hashconnect.pairingEvent.on(pairingData => {
@@ -137,42 +144,65 @@ export const createNFTWithFees = async (name, symbol, maxSupply, fallback_fee, r
     // }
 }
 
-export const createTokenWithJs = async () => {
+export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fallback_fee) => {
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
+    const { key } = await getAccountInfo(saveData.savedPairings[0].accountIds[0]);
+    const _publicKey = PublicKey.fromString(key.key)
     try {
-        let customeFee = new CustomRoyaltyFee()
-            .setNumerator(1) // The numerator of the fraction
-            .setDenominator(10) // The denominator of the fraction
-            .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)) // The fallback fee
-            .setFeeCollectorAccountId("0.0.461962"));
-        // let nftCustomFee = await new CustomRoyaltyFee().setNumerator(5)
-        //     .setDenominator(10)
-        //     .feeCollectorAccountId("0.0.461962")
-        //     .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(10)));
-        let nftCreate = await new TokenCreateTransaction()
-            .setTokenName("Fall Collection")
-            .setTokenSymbol("Leaf")
+        let customFees = [];
+        for(var i=0; i<royaltyFees.length; i++) {
+            console.log(royaltyFees[i]);
+            let fee = await new CustomRoyaltyFee()
+            .setNumerator(parseInt(royaltyFees[i].fee))
+            .setDenominator(100)
+            .setFeeCollectorAccountId(royaltyFees[i].royalty_account)
+            .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(fallback_fee)));
+            customFees.push(fee);
+        }
+        let tokenCreateTx = await new TokenCreateTransaction()
+            .setTokenName(name)
+            .setTokenSymbol(symbol)
             .setTokenType(TokenType.NonFungibleUnique)
             .setDecimals(0)
             .setInitialSupply(0)
-            .setTreasuryAccountId("0.0.451770")
+            .setMaxTransactionFee(new Hbar(100))
+            .setTreasuryAccountId(signer.getAccountId())
             .setSupplyType(TokenSupplyType.Finite)
-            .setMaxSupply(10)
-            .setCustomFees([customeFee])
-            .setAdminKey("0.0.451770")
-            .setSupplyKey("0.0.451770")
-            .freezeWithSigner(signer)
-            .signWithSigner(signer);
+            .setMaxSupply(maxSupply)
+            .setSupplyKey(_publicKey)
+            .setAdminKey(_publicKey)
+            .setAutoRenewAccountId(signer.getAccountId());
+        if(customFees.length>0) {
+            tokenCreateTx = await tokenCreateTx.setCustomFees(customFees);
+        }
+        const freezedTx = await tokenCreateTx.freezeWithSigner(signer);
+        const signedTx = await freezedTx.signWithSigner(signer);
+        const submitTx = await signedTx.executeWithSigner(signer);
+        const _receipt = await provider.getTransactionReceipt(submitTx.transactionId);
         
-        let nftCreateSign = await nftCreate.signWithSigner(signer);
-        let nftCreateSubmit = await nftCreateSign.executeWithSigner(signer);
-        console.log(nftCreateSubmit);
+        const tokenId = _receipt.tokenId;
+        return tokenId.toString();
     } catch (error) {
         console.log(error, "ERRR");
     }
-    
+}
 
+export const updateTokenSupplyKey = async (tokenId, supplyKey) => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    try {
+        const transaction = await new TokenUpdateTransaction()
+            .setTokenId(tokenId)
+            .setSupplyKey(supplyKey)
+            .freezeWithSigner(signer);
+        const signTx = await transaction.signWithSigner(signer);
+        const transactionId = await signTx.executeWithSigner(signer);
+        return transactionId;
+    } catch (error) {
+        console.log(error, "STEPPPP")
+    }
+    
 }
 
 export const associateToken = async (tokenId) => {
@@ -212,10 +242,10 @@ export const mintNFT = async (tokenAddr, qty, metadata) => {
                       new ContractFunctionParameters()
                       .addAddress(tokenAddr)
                       .addInt64(qty)
-                      .addBytesArray([Buffer.from(metadata)])
-                      .add)
+                      .addBytesArray([Buffer.from(metadata)]))
                     .freezeWithSigner(signer);
-        const result = await mintNFTTx.executeWithSigner(signer);
+        const signedTx = await mintNFTTx.signWithSigner(signer);
+        const result = await signedTx.executeWithSigner(signer);
         return result;
     } catch (error) {
         console.log(error, "error")

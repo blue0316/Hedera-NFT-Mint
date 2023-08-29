@@ -25,7 +25,6 @@ function SingleTab({pairingData}) {
     const [buttonTxt, setButtonTxt] = useState(["CREATE & MINT", "CREATING NFT...", "ASSOCIATE NFT", "ASSOCIATING NFT...", "APPROVE SAUCEINU", "APPROVING SAUCEINU...", "MINT", "MINTING..."])
     const [errorMsg, setErrorMsg] = useState("");
     const [createdToken, setCreatedToken] = useState(undefined);
-    const [metadata, setMetadata] = useState(undefined);
     const onChange = (imageList) => {
         setImages(imageList);
     };
@@ -49,77 +48,43 @@ function SingleTab({pairingData}) {
     }
     const updateRoyaltyAccs = (index, type, value) => {
         const newValues = royaltyAccs.map((item, i) => {
-            return i === index ? type=="royalty_account"?{royalty_account: value, fee: item.value}:{royalty_account: item.royalty_account, fee: value} : item;
+            return i === index ? type=="royalty_account"?{royalty_account: value, fee: item.fee}:{royalty_account: item.royalty_account, fee: value} : item;
         });
         setRoyaltyAccs(newValues);
     }
     
-    const createNFTFunc = async () => {
+    const uploadMetadata = async () => {
+        const imageData = base64ToArrayBuffer(images[0]["data_url"]);
+        const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
+        const nftstorage = new NFTStorage({ token: ipfskey })
+        const { url }  = await nftstorage.store({
+            image: file,
+            type: images[0].file.type,
+            name: tokenName,
+            description,
+            creator,
+            format: 'none',
+            attributes:attributes,
+            properties:{fee:royaltyAccs}
+        });
+        return url;
+    }
+
+    const proceed = async () => {
         if(images.length==0) { setErrorMsg("please select image"); return; }
         if(tokenName==undefined || symbol==undefined || maxSupply==undefined) { setErrorMsg("Please enter required fields"); return; }
         if(maxSupply<quantity) { setErrorMsg("Quentity exceeded the max supply"); return;}
         try {
-            setStep(1);
-            setErrorMsg("");
-            const imageData = base64ToArrayBuffer(images[0]["data_url"]);
-            const file = new File([imageData], images[0].file.name, { type: images[0].file.type });
-            const nftstorage = new NFTStorage({ token: ipfskey })
-            const { url }  = await nftstorage.store({
-                image: file,
-                type: images[0].file.type,
-                name: tokenName,
-                description,
-                creator,
-                format: 'none',
-                attributes:attributes,
-                properties:{fee:royaltyAccs}
-            });
-            const txResult = await createNFT(tokenName, symbol, maxSupply);
-            await sleep(6000);
-            const { call_result } = await getTokenAddress(txResult.transactionId);
-            console.log("0x"+call_result.substring(call_result.length-40))
-            const token = TokenId.fromSolidityAddress("0x"+call_result.substring(call_result.length-40));
-            setMetadata(url);
-            setCreatedToken(token);
-            setStep(2);
-        } catch (error) {
-            setStep(0);
-            setErrorMsg(error.message);
-        }
-    }
-
-    const proceed = async () => {
-        await createTokenWithJs();
-        return;
-        const fixedFee = [{
-            amount:1,
-            address: TokenId.fromString(sauceInu).toSolidityAddress(),
-            useHbarsForPayment: false,
-            useCurrentTokenForPayment: true,
-            feeCollector: AccountId.fromString("0.0.461962").toSolidityAddress()
-        }];
-
-        const fallbackFee = new CustomFixedFee()
-            .setAmount(1) 
-            .setDenominatingTokenId(sauceInu)
-            .setFeeCollectorAccountId("0.0.461962");
-        
-        const royaltyFee = new CustomRoyaltyFee()
-            .setNumerator(1) 
-            .setDenominator(10)
-            .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)) // The fallback fee
-            .setFeeCollectorAccountId("0.0.461962"));
-
-        await createNFTWithFees(tokenName, symbol, maxSupply, fixedFee, royaltyAccs);
-        return;
-        try {
             if(step==0) {
-                const createNFTTx = await createNFTFunc();
-                //console.log(createdToken.toSolidityAddress().toString());
+                setStep(1);
+                setErrorMsg("");
+                const tokenId = await createTokenWithJs(tokenName, symbol, maxSupply, royaltyAccs, fallbackFee);
+                setCreatedToken(tokenId);
+                setStep(6);
             } else if(step==2) {
                 setStep(3);
                 setErrorMsg("");
-                const association = await associateToken(createdToken.toString());
+                const association = await associateToken(createdToken);
                 if(shouldApprove(quantity)) setStep(6);
                 else setStep(4);
             } else if(step==4) {
@@ -130,7 +95,8 @@ function SingleTab({pairingData}) {
             } else if(step==6) {
                 setStep(7);
                 setErrorMsg("");
-                const mintResult = await mintNFT(createdToken.toSolidityAddress().toString(), quantity, metadata) // need to update quantity
+                const metadata = await uploadMetadata();
+                const mintResult = await mintNFT(TokenId.fromString(createdToken).toSolidityAddress(), quantity, metadata) // need to update quantity
                 setStep(0);
             } 
         } catch (error) {
