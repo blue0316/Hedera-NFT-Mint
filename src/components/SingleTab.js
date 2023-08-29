@@ -3,8 +3,8 @@ import ImageUploading from 'react-images-uploading';
 import { sleep, base64ToArrayBuffer } from '../services/helpers';
 import { NFTStorage, File, Token } from 'nft.storage'
 import { ipfskey, sauceInu } from '../config/config';
-import { createNFT, approveSauceInu, getTokenAddress, mintNFT, createNFTWithFees, associateToken, shouldApprove,createTokenWithJs } from '../hashgraph';
-import { TokenId, AccountId, CustomFixedFee, Hbar, CustomRoyaltyFee, TokenCreateTransaction, TokenType, TokenSupplyType } from '@hashgraph/sdk';
+import { createNFT, approveSauceInu, getTokenAddress, mintNFT, createNFTWithFees, associateToken, shouldApprove,createTokenWithJs, updateTokenSupplyKey } from '../hashgraph';
+import { TokenId, AccountId, CustomFixedFee, Hbar, CustomRoyaltyFee, TokenCreateTransaction, TokenType, TokenSupplyType, PublicKey } from '@hashgraph/sdk';
 import { Oval } from  'react-loader-spinner'
 
 
@@ -73,13 +73,14 @@ function SingleTab({pairingData}) {
     const proceed = async () => {
         if(images.length==0) { setErrorMsg("please select image"); return; }
         if(tokenName==undefined || symbol==undefined || maxSupply==undefined) { setErrorMsg("Please enter required fields"); return; }
-        if(maxSupply<quantity) { setErrorMsg("Quentity exceeded the max supply"); return;}
+        if(parseInt(maxSupply)<parseInt(quantity)) { setErrorMsg("Quentity exceeded the max supply"); return;}
         try {
             if(step==0) {
                 setStep(1);
                 setErrorMsg("");
                 const tokenId = await createTokenWithJs(tokenName, symbol, maxSupply, royaltyAccs, fallbackFee);
                 setCreatedToken(tokenId);
+                await updateTokenSupplyKey(tokenId, PublicKey.from)
                 setStep(6);
             } else if(step==2) {
                 setStep(3);
