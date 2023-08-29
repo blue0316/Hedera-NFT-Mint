@@ -7,7 +7,13 @@ import {
     ContractExecuteTransaction,
     ContractFunctionParameters,
     ContractId,
+    CustomFixedFee,
+    CustomRoyaltyFee,
     TokenId,
+    Hbar,
+    TokenCreateTransaction,
+    TokenType,
+    TokenSupplyType
 } from '@hashgraph/sdk';
 import coindata from "./constants"
 
@@ -94,13 +100,79 @@ export const createNFT = async (name, symbol, maxSupply) => {
                       .addString(symbol)
                       .addString("")
                       .addInt64(maxSupply)
-                      .addInt64(7000000))
+                      .addInt64(7000000)
+                      .addBytes32Array()
+                      )
                     .freezeWithSigner(signer);
         const result = await createNFTTx.executeWithSigner(signer);
         return result;
     } catch (error) {
         console.log(error, "error")
     }
+}
+
+export const createNFTWithFees = async (name, symbol, maxSupply, fallback_fee, royalty_fee) => {
+    console.log(fallback_fee, royalty_fee);
+    // let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    // let signer = hashconnect.getSigner(provider);
+    // try {
+    //     const createNFTTx = await new ContractExecuteTransaction()
+    //                 .setContractId(contractId)
+    //                 .setGas(1000000)
+    //                 .setPayableAmount(20)
+    //                 .setFunction("createNft",
+    //                   new ContractFunctionParameters()
+    //                   .addString(name)
+    //                   .addString(symbol)
+    //                   .addString("")
+    //                   .addInt64(maxSupply)
+    //                   .addInt64(7000000)
+    //                   .addBytes32Array()
+    //                   )
+    //                 .freezeWithSigner(signer);
+    //     const result = await createNFTTx.executeWithSigner(signer);
+    //     return result;
+    // } catch (error) {
+    //     console.log(error, "error")
+    // }
+}
+
+export const createTokenWithJs = async () => {
+    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    let signer = hashconnect.getSigner(provider);
+    try {
+        let customeFee = new CustomRoyaltyFee()
+            .setNumerator(1) // The numerator of the fraction
+            .setDenominator(10) // The denominator of the fraction
+            .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)) // The fallback fee
+            .setFeeCollectorAccountId("0.0.461962"));
+        // let nftCustomFee = await new CustomRoyaltyFee().setNumerator(5)
+        //     .setDenominator(10)
+        //     .feeCollectorAccountId("0.0.461962")
+        //     .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(10)));
+        let nftCreate = await new TokenCreateTransaction()
+            .setTokenName("Fall Collection")
+            .setTokenSymbol("Leaf")
+            .setTokenType(TokenType.NonFungibleUnique)
+            .setDecimals(0)
+            .setInitialSupply(0)
+            .setTreasuryAccountId("0.0.451770")
+            .setSupplyType(TokenSupplyType.Finite)
+            .setMaxSupply(10)
+            .setCustomFees([customeFee])
+            .setAdminKey("0.0.451770")
+            .setSupplyKey("0.0.451770")
+            .freezeWithSigner(signer)
+            .signWithSigner(signer);
+        
+        let nftCreateSign = await nftCreate.signWithSigner(signer);
+        let nftCreateSubmit = await nftCreateSign.executeWithSigner(signer);
+        console.log(nftCreateSubmit);
+    } catch (error) {
+        console.log(error, "ERRR");
+    }
+    
+
 }
 
 export const associateToken = async (tokenId) => {
@@ -140,7 +212,8 @@ export const mintNFT = async (tokenAddr, qty, metadata) => {
                       new ContractFunctionParameters()
                       .addAddress(tokenAddr)
                       .addInt64(qty)
-                      .addBytesArray([Buffer.from(metadata)]))
+                      .addBytesArray([Buffer.from(metadata)])
+                      .add)
                     .freezeWithSigner(signer);
         const result = await mintNFTTx.executeWithSigner(signer);
         return result;

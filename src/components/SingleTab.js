@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ImageUploading from 'react-images-uploading';
 import { sleep, base64ToArrayBuffer } from '../services/helpers';
-import { NFTStorage, File } from 'nft.storage'
-import { ipfskey } from '../config/config';
-import { createNFT, approveSauceInu, getTokenAddress, mintNFT, transferNFT, associateToken, shouldApprove } from '../hashgraph';
-import { TokenId } from '@hashgraph/sdk';
+import { NFTStorage, File, Token } from 'nft.storage'
+import { ipfskey, sauceInu } from '../config/config';
+import { createNFT, approveSauceInu, getTokenAddress, mintNFT, createNFTWithFees, associateToken, shouldApprove,createTokenWithJs } from '../hashgraph';
+import { TokenId, AccountId, CustomFixedFee, Hbar, CustomRoyaltyFee, TokenCreateTransaction, TokenType, TokenSupplyType } from '@hashgraph/sdk';
 import { Oval } from  'react-loader-spinner'
 
 
@@ -89,6 +89,29 @@ function SingleTab({pairingData}) {
     }
 
     const proceed = async () => {
+        await createTokenWithJs();
+        return;
+        const fixedFee = [{
+            amount:1,
+            address: TokenId.fromString(sauceInu).toSolidityAddress(),
+            useHbarsForPayment: false,
+            useCurrentTokenForPayment: true,
+            feeCollector: AccountId.fromString("0.0.461962").toSolidityAddress()
+        }];
+
+        const fallbackFee = new CustomFixedFee()
+            .setAmount(1) 
+            .setDenominatingTokenId(sauceInu)
+            .setFeeCollectorAccountId("0.0.461962");
+        
+        const royaltyFee = new CustomRoyaltyFee()
+            .setNumerator(1) 
+            .setDenominator(10)
+            .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)) // The fallback fee
+            .setFeeCollectorAccountId("0.0.461962"));
+
+        await createNFTWithFees(tokenName, symbol, maxSupply, fixedFee, royaltyAccs);
+        return;
         try {
             if(step==0) {
                 const createNFTTx = await createNFTFunc();
@@ -115,6 +138,8 @@ function SingleTab({pairingData}) {
             setStep(0);
         }
     }
+
+    
 
     return (
         <>
@@ -169,7 +194,7 @@ function SingleTab({pairingData}) {
                         />
                     </div>
                     <div className='box-container'>
-                        <input className='text-input' disabled={step!==0} type='text' placeholder={`Fallback Fee ${index+1}`} value={item.value} 
+                        <input className='text-input' disabled={step!==0} type='text' placeholder={`Royalty Fee ${index+1}`} value={item.value} 
                             onChange={(e)=>updateRoyaltyAccs(index, "fee", e.target.value)}
                         />
                     </div>
