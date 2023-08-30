@@ -80,13 +80,14 @@ function SingleTab({pairingData}) {
                 setErrorMsg("");
                 const tokenId = await createTokenWithJs(tokenName, symbol, maxSupply, royaltyAccs, fallbackFee);
                 setCreatedToken(tokenId);
-                setStep(6);
+                const approveStatus = await shouldApprove(quantity);
+                if(approveStatus) setStep(4);
+                else setStep(6);
             } else if(step==2) {
                 setStep(3);
                 setErrorMsg("");
                 const association = await associateToken(createdToken);
-                if(shouldApprove(quantity)) setStep(6);
-                else setStep(4);
+                
             } else if(step==4) {
                 setStep(5);
                 setErrorMsg("");
@@ -98,10 +99,10 @@ function SingleTab({pairingData}) {
                 const metadata = await uploadMetadata();
                 const mintResult = await mintNFT(TokenId.fromString(createdToken).toSolidityAddress(), quantity, metadata) // need to update quantity
                 setStep(0);
-            } 
+            }
         } catch (error) {
             setErrorMsg(error.message);
-            setStep(0);
+            setStep(step => step>0?step-1:0);
         }
     }
 

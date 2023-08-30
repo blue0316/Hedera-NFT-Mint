@@ -67,10 +67,9 @@ export const getAllowance = async (ownerId) => {
 }
 
 export const shouldApprove = async (qty) => {
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
     const tokenAllowance = await getAllowance(saveData.savedPairings[0].accountIds[0]);
     const amount = qty*sauceInuFee;
+    console.log(amount, tokenAllowance, "PPPPPPPPP")
     if(tokenAllowance<amount) return true;
     return false;
 }
@@ -119,59 +118,12 @@ export const createNFT = async (name, symbol, maxSupply) => {
     }
 }
 
-export const createNFTWithFees = async (name, symbol, maxSupply, fallback_fee, royalty_fee) => {
-    console.log(fallback_fee, royalty_fee);
-    // let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    // let signer = hashconnect.getSigner(provider);
-    // try {
-    //     const createNFTTx = await new ContractExecuteTransaction()
-    //                 .setContractId(contractId)
-    //                 .setGas(1000000)
-    //                 .setPayableAmount(20)
-    //                 .setFunction("createNft",
-    //                   new ContractFunctionParameters()
-    //                   .addString(name)
-    //                   .addString(symbol)
-    //                   .addString("")
-    //                   .addInt64(maxSupply)
-    //                   .addInt64(7000000)
-    //                   .addBytes32Array()
-    //                   )
-    //                 .freezeWithSigner(signer);
-    //     const result = await createNFTTx.executeWithSigner(signer);
-    //     return result;
-    // } catch (error) {
-    //     console.log(error, "error")
-    // }
-}
-
 export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fallback_fee) => {
-    // let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    // let signer = hashconnect.getSigner(provider);
-    // const operatorId = AccountId.fromString("0.0.451770");
-    // const operatorKey = PrivateKey.fromString("302e020100300506032b6570042204206490fd6f79abb86181d26474824e415805e1964c027ed72639e0d1d5ca0a8fb8");
-
-    // const client = Client.forTestnet().setOperator(operatorId, operatorKey);
-    // const contractUpdate = await new ContractUpdateTransaction()
-    //     .setContractId(ContractId.fromString(NFTCreator))
-    //     .setAdminKey(new KeyList())
-    //     .setMaxTransactionFee(new Hbar(20))
-    //     .freezeWith(client);
-    //     console.log(contractUpdate, "SSSSSSS-")
-    // //const signedTx = await contractUpdate.signWithSigner(signer);
-    // //console.log(signedTx, "SSSSSSS--")  
-    // const exeTx = await contractUpdate.execute(client);
-    // console.log(exeTx, "SSSSSSS---")
-    // return;
-    
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
-    const { key } = await getAccountInfo(saveData.savedPairings[0].accountIds[0]);
-    const _publicKey = PublicKey.fromString(key.key)
     try {
         let customFees = [];
         for(var i=0; i<royaltyFees.length; i++) {
-            console.log(royaltyFees[i]);
             let fee = await new CustomRoyaltyFee()
             .setNumerator(parseInt(royaltyFees[i].fee))
             .setDenominator(100)
@@ -190,8 +142,6 @@ export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fa
             .setSupplyType(TokenSupplyType.Finite)
             .setMaxSupply(maxSupply)
             .setSupplyKey(ContractId.fromString(NFTCreator))
-            //.setSupplyKey(_publicKey)
-            //.setAdminKey(_publicKey)
             .setAutoRenewAccountId(signer.getAccountId());
         if(customFees.length>0) {
             tokenCreateTx = await tokenCreateTx.setCustomFees(customFees);
@@ -206,23 +156,6 @@ export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fa
     } catch (error) {
         console.log(error, "ERRR");
     }
-}
-
-export const updateTokenSupplyKey = async (tokenId, supplyKey) => {
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
-    try {
-        const transaction = await new TokenUpdateTransaction()
-            .setTokenId(tokenId)
-            .setSupplyKey(supplyKey)
-            .freezeWithSigner(signer);
-        const signTx = await transaction.signWithSigner(signer);
-        const transactionId = await signTx.executeWithSigner(signer);
-        return transactionId;
-    } catch (error) {
-        console.log(error, "STEPPPP")
-    }
-    
 }
 
 export const associateToken = async (tokenId) => {
@@ -258,6 +191,7 @@ export const mintNFT = async (tokenAddr, qty, metadata) => {
         const mintNFTTx = await new ContractExecuteTransaction()
                     .setContractId(contractId)
                     .setGas(10000000)
+                    .setMaxTransactionFee(new Hbar(100))
                     .setFunction("mintNft",
                       new ContractFunctionParameters()
                       .addAddress(tokenAddr)

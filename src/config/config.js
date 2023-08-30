@@ -5,8 +5,8 @@ export const apiBaseUrl = "https://testnet.mirrornode.hedera.com/api/v1/";
 export const sauceInu = "0.0.460569";
 
 // export const NFTCreator = "0.0.853004";0.0.858518
-export const NFTCreator = "0.0.1130190";
+export const NFTCreator = "0.0.1135591";
 
-export const sauceInuFee = 1000*10**7;
+export const sauceInuFee = 10000*10**7;
 
 export const network = "testnet";
