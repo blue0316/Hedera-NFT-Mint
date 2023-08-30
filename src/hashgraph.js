@@ -16,7 +16,8 @@ import {
     TokenSupplyType,
     PublicKey,
     Client,
-    Key,
+    ContractUpdateTransaction,
+    KeyList,
     PrivateKey,
     TokenUpdateTransaction,
     ContractInfoQuery
@@ -145,6 +146,24 @@ export const createNFTWithFees = async (name, symbol, maxSupply, fallback_fee, r
 }
 
 export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fallback_fee) => {
+    // let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
+    // let signer = hashconnect.getSigner(provider);
+    // const operatorId = AccountId.fromString("0.0.451770");
+    // const operatorKey = PrivateKey.fromString("302e020100300506032b6570042204206490fd6f79abb86181d26474824e415805e1964c027ed72639e0d1d5ca0a8fb8");
+
+    // const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+    // const contractUpdate = await new ContractUpdateTransaction()
+    //     .setContractId(ContractId.fromString(NFTCreator))
+    //     .setAdminKey(new KeyList())
+    //     .setMaxTransactionFee(new Hbar(20))
+    //     .freezeWith(client);
+    //     console.log(contractUpdate, "SSSSSSS-")
+    // //const signedTx = await contractUpdate.signWithSigner(signer);
+    // //console.log(signedTx, "SSSSSSS--")  
+    // const exeTx = await contractUpdate.execute(client);
+    // console.log(exeTx, "SSSSSSS---")
+    // return;
+    
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
     let signer = hashconnect.getSigner(provider);
     const { key } = await getAccountInfo(saveData.savedPairings[0].accountIds[0]);
@@ -170,8 +189,9 @@ export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fa
             .setTreasuryAccountId(signer.getAccountId())
             .setSupplyType(TokenSupplyType.Finite)
             .setMaxSupply(maxSupply)
-            .setSupplyKey(_publicKey)
-            .setAdminKey(_publicKey)
+            .setSupplyKey(ContractId.fromString(NFTCreator))
+            //.setSupplyKey(_publicKey)
+            //.setAdminKey(_publicKey)
             .setAutoRenewAccountId(signer.getAccountId());
         if(customFees.length>0) {
             tokenCreateTx = await tokenCreateTx.setCustomFees(customFees);

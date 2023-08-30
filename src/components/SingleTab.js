@@ -80,7 +80,6 @@ function SingleTab({pairingData}) {
                 setErrorMsg("");
                 const tokenId = await createTokenWithJs(tokenName, symbol, maxSupply, royaltyAccs, fallbackFee);
                 setCreatedToken(tokenId);
-                await updateTokenSupplyKey(tokenId, PublicKey.from)
                 setStep(6);
             } else if(step==2) {
                 setStep(3);
