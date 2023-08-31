@@ -78,7 +78,7 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  {bulkTab && <BulkTab />}
+                  {bulkTab && <BulkTab pairingData = {pairingData} />}
                   {!bulkTab && <SingleTab pairingData = {pairingData} />}
                 </>}
               </div>

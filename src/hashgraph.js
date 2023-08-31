@@ -14,13 +14,6 @@ import {
     TokenCreateTransaction,
     TokenType,
     TokenSupplyType,
-    PublicKey,
-    Client,
-    ContractUpdateTransaction,
-    KeyList,
-    PrivateKey,
-    TokenUpdateTransaction,
-    ContractInfoQuery
 } from '@hashgraph/sdk';
 import { apiBaseUrl, NFTCreator, sauceInu, sauceInuFee, network } from "./config/config";
 
@@ -33,15 +26,37 @@ let saveData = {
     savedPairings: []
 }
 const appMetaData = {
-    name: "SauceFlip",
+    name: "NFT mint sauceinu",
     description: "A HBAR wallet",
     icon: "https://wallet.hashpack.app/assets/favicon/favicon.ico",
     url:""
 }
 
-const getAccountInfo = async (account_id) => {
-    const {data} = await axios.get(apiBaseUrl+"accounts/"+account_id);
-    return data;
+const groupBy = (items, key) => items.reduce(
+    (result, item) => ({
+      ...result,
+      [item[key]]: [
+        ...(result[item[key]] || []),
+        item,
+      ],
+    }), 
+    {},
+);
+export const getNFTs = async (accountId) => {
+    try {
+        let nftData = [];
+        const { data } = await axios.get(apiBaseUrl+"accounts/"+accountId+"/nfts");
+        const groupedData = Object.keys(groupBy(data.nfts, "token_id"));
+        console.log(groupedData, "GGGRRREEE")
+        for(var i=0; i<groupedData.length; i++) {
+            const { data } = await axios.get(apiBaseUrl+"tokens/"+groupedData[i]);
+            nftData.push(data);
+        }
+        return nftData;
+    } catch (error) {
+        console.log(error, "ERRR")
+    }
+    
 }
 
 export const pairClient = async () => {
@@ -91,31 +106,6 @@ export const approveSauceInu = async (qty) => {
         else return false;
     }
     return true;
-}
-  
-export const createNFT = async (name, symbol, maxSupply) => {
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
-    try {
-        const createNFTTx = await new ContractExecuteTransaction()
-                    .setContractId(contractId)
-                    .setGas(1000000)
-                    .setPayableAmount(20)
-                    .setFunction("createNft",
-                      new ContractFunctionParameters()
-                      .addString(name)
-                      .addString(symbol)
-                      .addString("")
-                      .addInt64(maxSupply)
-                      .addInt64(7000000)
-                      .addBytes32Array()
-                      )
-                    .freezeWithSigner(signer);
-        const result = await createNFTTx.executeWithSigner(signer);
-        return result;
-    } catch (error) {
-        console.log(error, "error")
-    }
 }
 
 export const createTokenWithJs = async (name, symbol, maxSupply, royaltyFees, fallback_fee) => {
@@ -175,14 +165,6 @@ export const associateToken = async (tokenId) => {
     
 }
 
-export const getTokenAddress = async (txHash) => {
-        const arr = txHash.split("@");
-        const secPart = arr[1].split(".");
-        const formattedStr = arr[0]+"-"+secPart[0]+"-"+secPart[1];
-        const { data } = await axios.get(apiBaseUrl+"contracts/results/"+formattedStr);
-        return data;
-}
-
 export const mintNFT = async (tokenAddr, qty, metadata) => {
     console.log(tokenAddr, qty, metadata);
     let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
@@ -200,26 +182,6 @@ export const mintNFT = async (tokenAddr, qty, metadata) => {
                     .freezeWithSigner(signer);
         const signedTx = await mintNFTTx.signWithSigner(signer);
         const result = await signedTx.executeWithSigner(signer);
-        return result;
-    } catch (error) {
-        console.log(error, "error")
-    }
-}
-
-export const transferNFT = async (tokenAddr, receiver, serial) => {
-    let provider = hashconnect.getProvider(network, saveData.topic, saveData.savedPairings[0].accountIds[0]);
-    let signer = hashconnect.getSigner(provider);
-    try {
-        const transferNFTTx = await new ContractExecuteTransaction()
-                    .setContractId(contractId)
-                    .setGas(1000000)
-                    .setFunction("transferNft",
-                      new ContractFunctionParameters()
-                      .addAddress(tokenAddr)
-                      .addAddress(receiver)
-                      .addInt64(serial))
-                    .freezeWithSigner(signer);
-        const result = await transferNFTTx.executeWithSigner(signer);
         return result;
     } catch (error) {
         console.log(error, "error")

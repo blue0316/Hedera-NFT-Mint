@@ -118,8 +118,9 @@
  
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #282c34; 
+  background: #83ff49; 
   border-radius: 10px;
+  height: 50px !;
 }
 
 /* Handle on hover */
@@ -325,6 +326,7 @@ main {
   margin: 0px 5px;
 }
 .box-container {
+  position: relative;
   width: 80%;
   margin: auto;
   margin-top: 15px;
@@ -392,6 +394,9 @@ main {
 }
 .upload__image-wrapper {
   text-align: center;
+}
+.upload__image-wrapper button {
+  width: 100%;
 }
 .connect-btn-section {
   display: flex;
@@ -694,4 +699,61 @@ footer ul li a {
 
 .text-input:disabled {
   color: gray;
+}
+
+.dropdown_list {
+  background-color: black;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 1.3rem;
+  font-weight: 500;
+  border: 1px solid #83ff49;
+  border-bottom-left-radius: 7px !important;
+  border-bottom-right-radius: 7px !important;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown_list > li {
+  list-style: none;
+  background: black;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+}
+.dropdown_list > li:hover {
+  background: #181c14 !important;
+}
+.dropdown_list > li:last-child {
+  border-bottom-left-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+}
+.dropdown_list_container {
+  position: absolute;
+  width: 100%;
+  background-color: black;
+  z-index: 10;
+}
+
+.select_token {
+  background: transparent;
+  border: 1px solid #83ff49;
+  border-radius: 20px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: white;
+  cursor: pointer;
+}
+.select_token_click {
+  background: transparent !important;
+  color: white;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+.select_token:hover {
+  background: transparent;
 }
