@@ -122,7 +122,7 @@ function SingleTab({pairingData}) {
                     onImageUpload,
                     onImageUpdate,
                     }) => (
-                    <div className="upload__image-wrapper">
+                    <div className="upload__image-wrapper box-container">
                         {imageList.length==0 && <button className='flip-button' onClick={onImageUpload}> Select NFT Image</button>}
                         {imageList.length==1 && <img className='image-upload' src={imageList[0]["data_url"]} onClick={imageList.length==0 ? onImageUpload : () => onImageUpdate(0)} alt="" width="300" />}
                     </div>

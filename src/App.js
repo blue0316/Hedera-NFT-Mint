@@ -12,7 +12,7 @@ import useSound from 'use-sound';
 function App() {
   const [playSound] = useSound(soundMusic, { volume: 0.5 });
   const [pairingData, setPairingData] = useState(null);
-  const [bulkTab, setBulkTab] = useState(true);
+  const [bulkTab, setBulkTab] = useState(false);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [clickPlaying, setClickPlaying] = useState(false);
 
@@ -70,11 +70,12 @@ function App() {
                 <>
                   <div className="tab-section">
                     <div className="tab-inner-section">
-                      <div className={'tab1 tab ' + (bulkTab==true? "selected-tab":"")} onClick={()=>(clickPlay(), setBulkTab(true))}>
-                        BULK MINTING
+                      
+                      <div className={'tab1 tab ' + (bulkTab==false? "selected-tab":"")} onClick={()=> (clickPlay(), setBulkTab(false))}>
+                        NEW COLLECTION
                       </div>
-                      <div className={'tab2 tab ' + (bulkTab==false? "selected-tab":"")} onClick={()=> (clickPlay(), setBulkTab(false))}>
-                        SINGLE MINTING
+                      <div className={'tab2 tab ' + (bulkTab==true? "selected-tab":"")} onClick={()=>(clickPlay(), setBulkTab(true))}>
+                        EXISTING COLLECTION
                       </div>
                     </div>
                   </div>

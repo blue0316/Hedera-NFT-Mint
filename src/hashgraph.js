@@ -47,7 +47,6 @@ export const getNFTs = async (accountId) => {
         let nftData = [];
         const { data } = await axios.get(apiBaseUrl+"accounts/"+accountId+"/nfts");
         const groupedData = Object.keys(groupBy(data.nfts, "token_id"));
-        console.log(groupedData, "GGGRRREEE")
         for(var i=0; i<groupedData.length; i++) {
             const { data } = await axios.get(apiBaseUrl+"tokens/"+groupedData[i]);
             nftData.push(data);
