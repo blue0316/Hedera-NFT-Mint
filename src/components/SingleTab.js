@@ -26,6 +26,7 @@ function SingleTab({pairingData}) {
     const [errorMsg, setErrorMsg] = useState("");
     const [createdToken, setCreatedToken] = useState(undefined);
     const onChange = (imageList) => {
+        if(step==0)
         setImages(imageList);
     };
     const updateNumAttributes = (value) => {

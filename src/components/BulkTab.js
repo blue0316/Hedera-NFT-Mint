@@ -22,7 +22,7 @@ function BulkTab({pairingData}) {
     const [buttonTxt, setButtonTxt] = useState(["MINT", "UPLOADING METADATA...", "APPROVING SAUCEINU...", "MINTING..."])
 
     const onChange = (imageList) => {
-        setImages(imageList);
+        if(step==0) setImages(imageList);
     };
 
     const uploadMetadata = async () => {
