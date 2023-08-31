@@ -4,7 +4,7 @@ import ImageUploading from 'react-images-uploading';
 import { NFTStorage, File } from 'nft.storage'
 import { ipfskey } from '../config/config';
 import { getNFTs, shouldApprove, approveSauceInu, mintNFT } from "../hashgraph";
-import { sleep, base64ToArrayBuffer } from '../services/helpers';
+import { base64ToArrayBuffer } from '../services/helpers';
 import { TokenId } from "@hashgraph/sdk";
 import { Oval } from  'react-loader-spinner'
 function BulkTab({pairingData}) {
